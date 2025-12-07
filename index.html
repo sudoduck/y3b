@@ -5,216 +5,438 @@
 }</script></head><body>
 
 
-  <meta charset="UTF-8">
-  <title>Sudoduck — Cloud Player</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sudoduck — Cloud Player (Pro Controls)</title>
 
-  <style>
-    /* ---------------------- RESET & BASE ---------------------- */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: #050007;
-      font-family: 'Inter', sans-serif;
-      color: white;
-      overflow-x: hidden;
-      min-height: 100vh;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet">
 
-    /* ---------------------- BACKGROUND ORBS ---------------------- */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.45;
-      pointer-events: none;
-      animation: floaty 18s infinite alternate ease-in-out;
-    }
-    @keyframes floaty {
-      0% { transform: translate(-10%, -10%) scale(1); }
-      100% { transform: translate(10%, 10%) scale(1.2); }
-    }
-    #orb1 { width: 600px; height: 600px; background: #8000ff; top: -200px; left: -200px; }
-    #orb2 { width: 700px; height: 700px; background: #ff00ff; bottom: -250px; right: -200px; animation-delay: 6s; }
-    #orb3 { width: 500px; height: 500px; background: #3300ff; top: 40%; left: 20%; animation-delay: 3s; }
+<style>
+  :root{
+    --bg:#050007; --glass: rgba(255,255,255,0.06);
+    --accent:#4da3ff; /* blue accent (user asked blue) */
+    --accent-weak: rgba(77,163,255,0.14);
+    --card-glow: rgba(77,163,255,0.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:'Inter',system-ui,Arial;
+    background: radial-gradient(1200px 600px at 10% 10%, #07102a 0%, var(--bg) 40%, #020007 100%);
+    color:#e9f2ff; -webkit-font-smoothing:antialiased;
+  }
 
-    /* ---------------------- HEADER ---------------------- */
-    header {
-      text-align: center;
-      padding: 70px 20px 30px;
-    }
-    header h1 {
-      font-size: 65px;
-      font-weight: 900;
-      letter-spacing: -1px;
-      background: linear-gradient(90deg, #c38bff, #ffffff, #a359ff);
-      -webkit-background-clip: text;
-      color: transparent;
-      text-shadow: 0 0 50px #b100ff77;
-    }
-    header p {
-      margin-top: 18px;
-      font-size: 20px;
-      opacity: 0.8;
-    }
+  /* Cinematic orbs */
+  .orb{position:fixed;border-radius:50%;filter:blur(140px);opacity:0.45;pointer-events:none}
+  #orbA{width:700px;height:700px;background:linear-gradient(135deg,#21004a,#3b00a8);left:-200px;top:-220px}
+  #orbB{width:700px;height:700px;background:linear-gradient(135deg,#002a4d,#004e8a);right:-250px;bottom:-200px;opacity:0.28}
 
-    /* ---------------------- SEARCH ---------------------- */
-    #search {
-      display: block;
-      margin: 40px auto 10px;
-      width: 90%;
-      max-width: 600px;
-      padding: 18px 25px;
-      font-size: 18px;
-      border-radius: 50px;
-      border: none;
-      outline: none;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      box-shadow: 0 0 25px #8a3dff88;
-      backdrop-filter: blur(12px);
-      transition: 0.25s;
-    }
-    #search:focus {
-      box-shadow: 0 0 40px #c180ffcc;
-      background: rgba(255,255,255,0.18);
-    }
+  header{padding:64px 20px 12px;text-align:center}
+  header h1{
+    margin:0;font-size:56px;line-height:1;font-weight:800;
+    background:linear-gradient(90deg,#b7d8ff,#ffffff,#7bb7ff);-webkit-background-clip:text;color:transparent;
+    text-shadow:0 6px 40px rgba(77,163,255,0.06);
+  }
+  header p{margin-top:10px;opacity:0.85}
 
-    /* ---------------------- GRID ---------------------- */
-    .grid {
-      width: 92%;
-      margin: 40px auto 80px;
-      display: grid;
-      gap: 40px;
-      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-    }
+  /* search */
+  #searchWrap{display:flex;justify-content:center;margin:28px 20px}
+  #search{
+    width:100%;max-width:760px;padding:14px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.06);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    color:#dff1ff; outline:none;box-shadow:0 6px 28px var(--card-glow);font-size:16px;
+  }
 
-    /* ---------------------- CARDS ---------------------- */
-    .card {
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 22px;
-      padding: 25px;
-      backdrop-filter: blur(22px);
-      box-shadow:
-        0 0 25px #9d4dff33,
-        inset 0 0 20px #ffffff08;
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: 0.35s;
-      transform: translateY(0);
-    }
-    .card:hover {
-      transform: translateY(-12px) scale(1.02);
-      box-shadow:
-        0 0 45px #c290ff66,
-        inset 0 0 40px #ffffff11;
-    }
+  .grid{
+    width:94%;max-width:1200px;margin:36px auto 100px;display:grid;gap:30px;
+    grid-template-columns: repeat(auto-fit,minmax(340px,1fr));
+  }
 
-    /* ---------------------- TITLE ---------------------- */
-    .title {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 18px;
-      letter-spacing: 0.5px;
-      text-shadow: 0 0 10px #d9a6ff;
-    }
+  /* Album card */
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:18px;padding:18px;border:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 10px 40px rgba(4,8,24,0.6), 0 0 30px var(--card-glow);
+    transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s;
+    position:relative; overflow:hidden;
+  }
+  .card:hover{ transform: translateY(-10px); box-shadow: 0 30px 80px rgba(4,8,24,0.7), 0 0 50px rgba(77,163,255,0.18); }
 
-    audio, video {
-      width: 100%;
-      margin-top: 14px;
-      border-radius: 14px;
-      background: black;
-      outline: none;
-      box-shadow: 0 0 20px #00000088;
-    }
-  </style>
+  .meta{display:flex;gap:12px;align-items:center}
+  .art{
+    width:88px;height:88px;border-radius:12px;background:linear-gradient(180deg,#111,#060020);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);
+    box-shadow: inset 0 -6px 20px rgba(0,0,0,0.6);
+    flex:0 0 88px;font-size:20px;
+  }
+  .info{flex:1}
+  .title{font-size:18px;font-weight:700;margin-bottom:6px}
+  .sub{opacity:0.72;font-size:13px}
+
+  /* controls container */
+  .controls{margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+  .leftControls{display:flex;flex-direction:column;gap:10px}
+
+  /* waveform canvas */
+  .waveWrap{height:64px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:10px;padding:6px;border:1px solid rgba(255,255,255,0.02)}
+  canvas.wave{width:100%;height:52px;display:block;border-radius:8px; background:linear-gradient(90deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));}
+
+  /* timeline / progress */
+  .progress{
+    height:8px;border-radius:8px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;cursor:pointer;
+  }
+  .progress .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#9ad6ff);box-shadow:0 6px 20px rgba(77,163,255,0.12);transition:width .08s linear}
+
+  /* small controls row */
+  .buttons{display:flex;gap:10px;align-items:center}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.02);
+    color:var(--accent);cursor:pointer;font-weight:600;gap:8px;min-width:44px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+  }
+  .btn.play{background:linear-gradient(90deg,var(--accent),#6fb9ff);color:#04102a}
+  .time{font-size:13px;opacity:0.88;min-width:72px;text-align:right}
+
+  /* right column: big controls */
+  .rightCol{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+  .download{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);color:var(--accent);text-decoration:none;font-weight:700}
+  .volumeRow{display:flex;align-items:center;gap:8px}
+  input[type="range"]{appearance:none;width:120px;height:6px;background:transparent}
+  input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:linear-gradient(90deg,#2b3b4d,#274a6a)}
+  input[type="range"]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 6px 18px rgba(77,163,255,0.18);margin-top:-4px}
+  .mutebtn{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);color:#9fcfff}
+
+  /* video element style */
+  video.element{
+    width:100%;border-radius:12px;background:#000;display:block;margin-top:12px;
+  }
+
+  @media (max-width:720px){
+    header h1{font-size:34px}
+    .meta{gap:10px}
+    .art{width:72px;height:72px}
+    .title{font-size:16px}
+  }
+</style>
 
 
 
-<!-- Cinematic Background Orbs -->
-<div id="orb1" class="orb"></div>
-<div id="orb2" class="orb"></div>
-<div id="orb3" class="orb"></div>
+<div id="orbA" class="orb"></div>
+<div id="orbB" class="orb"></div>
 
 <header>
-  <h1>Sudoduck Cloud Player</h1>
-  <p>Ultra-premium MP3/MP4 playback directly from your GitHub</p>
+  <h1>Sudoduck — Cloud Player (Pro)</h1>
+  <p>Custom players, clickable waveform (blue), download &amp; professional controls — auto-detected from your repo.</p>
 </header>
 
-<input type="text" id="search" placeholder="Search tracks…">
+<div id="searchWrap">
+  <input id="search" placeholder="Search tracks, artist, filename...">
+</div>
 
-<div class="grid" id="container">Loading...</div>
+<main class="grid" id="container">
+  <div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">Loading library...</div>
+</main>
 
 <script>
-/* ---------------------- FETCH FILES ---------------------- */
-async function getAllFiles(path = "") {
-  const url = `https://api.github.com/repos/sudoduck/y3b/contents/${path}`;
+/* ------------------------------
+  CONFIG: repo owner/name and branch
+   - If your default branch is not main, change 'main' below.
+-------------------------------*/
+const GITHUB_USER = 'sudoduck';
+const GITHUB_REPO = 'y3b';
+const BRANCH = 'main'; // change if needed
+
+/* helper: fetch folder contents recursively from GitHub contents API */
+async function getAllFiles(path=''){
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
   const res = await fetch(url);
+  if(!res.ok) return [];
   const data = await res.json();
   let files = [];
-
-  for (const item of data) {
-    if (item.type === "file" && (item.name.endsWith(".mp3") || item.name.endsWith(".mp4")))
+  for(const item of data){
+    if(item.type === 'file' && (item.name.toLowerCase().endsWith('.mp3') || item.name.toLowerCase().endsWith('.mp4'))){
       files.push(item);
-    if (item.type === "dir")
-      files.push(...await getAllFiles(item.path));
+    } else if(item.type === 'dir'){
+      const sub = await getAllFiles(item.path);
+      files = files.concat(sub);
+    }
   }
   return files;
 }
 
-/* ---------------------- GROUP FILES ---------------------- */
-function groupFiles(files) {
+/* group by base name (filename without extension) */
+function groupFiles(files){
   const groups = {};
-  files.forEach(f => {
-    const base = f.name.replace(/\.(mp3|mp4)$/i, "");
-    if (!groups[base]) groups[base] = {};
-    if (f.name.endsWith(".mp3")) groups[base].mp3 = f;
-    if (f.name.endsWith(".mp4")) groups[base].mp4 = f;
+  files.forEach(f=>{
+    const base = f.name.replace(/\.(mp3|mp4)$/i,'');
+    if(!groups[base]) groups[base] = {};
+    if(f.name.toLowerCase().endsWith('.mp3')) groups[base].mp3 = f;
+    if(f.name.toLowerCase().endsWith('.mp4')) groups[base].mp4 = f;
   });
   return groups;
 }
 
-/* ---------------------- DISPLAY ---------------------- */
-async function showFiles() {
-  const container = document.getElementById("container");
-  container.innerHTML = "";
+/* create card HTML and wire custom controls */
+function createCard(name, group){
+  const container = document.createElement('div');
+  container.className = 'card';
+  container.dataset.name = name.toLowerCase();
 
-  const files = await getAllFiles("");
-  const groups = groupFiles(files);
+  // art initial letters or emoji
+  const artLabel = name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
 
-  Object.keys(groups).forEach(name => {
-    const g = groups[name];
-    const card = document.createElement("div");
-    card.className = "card";
-    card.dataset.name = name.toLowerCase();
+  // raw URLs
+  const mp3url = group.mp3 ? `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${group.mp3.path}` : null;
+  const mp4url = group.mp4 ? `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${group.mp4.path}` : null;
 
-    let html = `<div class="title">${name}</div>`;
+  // build base HTML
+  container.innerHTML = `
+    <div class="meta">
+      <div class="art">${artLabel}</div>
+      <div class="info">
+        <div class="title">${name}</div>
+        <div class="sub">${group.mp3 ? group.mp3.path : ''}${group.mp3 && group.mp4 ? ' • ' : ''}${group.mp4 ? group.mp4.path : ''}</div>
+      </div>
+    </div>
 
-    if (g.mp3) {
-      const mp3url = `https://raw.githubusercontent.com/sudoduck/y3b/main/${g.mp3.path}`;
-      html += `<audio controls><source src="${mp3url}" type="audio/mpeg"></audio>`;
+    <div class="controls">
+      <div class="leftControls">
+        <div class="waveWrap" ${mp3url ? '' : 'style="display:none"'}><canvas class="wave"></canvas></div>
+
+        <div class="progress" title="Seek">
+          <div class="bar"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <div class="buttons">
+            <button class="btn play">Play</button>
+            <button class="btn prev" style="display:none">Prev</button>
+            <button class="btn next" style="display:none">Next</button>
+            <button class="btn mutebtn">Mute</button>
+          </div>
+          <div class="time">0:00 / 0:00</div>
+        </div>
+      </div>
+
+      <div class="rightCol">
+        <a class="download" download="${name}" href="${mp3url||mp4url}">Download</a>
+        <div class="volumeRow">
+          <input type="range" min="0" max="1" step="0.01" value="0.85" class="vol"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="mediaHolder" style="margin-top:12px">
+      ${mp4url ? `<video class="element" preload="metadata" src="${mp4url}"></video>` : ''}
+      ${mp3url ? `<audio class="element" preload="metadata" src="${mp3url}" style="display:none"></audio>` : ''}
+    </div>
+  `;
+
+  // Now wire up custom controls & waveform
+  const playBtn = container.querySelector('.play');
+  const muteBtn = container.querySelector('.mutebtn');
+  const volRange = container.querySelector('.vol');
+  const prog = container.querySelector('.progress');
+  const bar = container.querySelector('.bar');
+  const timeLabel = container.querySelector('.time');
+  const canvas = container.querySelector('canvas.wave');
+  const download = container.querySelector('.download');
+  const media = container.querySelector('.element'); // either audio (hidden) or video
+  const audioElement = media; // name consistently
+
+  // fallback: if audio element is missing but mp3 exists, create audio
+  if(!audioElement && mp3url){
+    const a = document.createElement('audio'); a.className='element'; a.src = mp3url; a.preload='metadata'; a.style.display='none';
+    container.querySelector('.mediaHolder').appendChild(a);
+  }
+
+  const mediaEl = container.querySelector('.element');
+
+  // helper: format time
+  function fmt(s){
+    if(!isFinite(s)) return '0:00';
+    const m = Math.floor(s/60), sec = Math.floor(s%60).toString().padStart(2,'0');
+    return `${m}:${sec}`;
+  }
+
+  // wire volume
+  volRange.addEventListener('input', e=>{
+    if(mediaEl) mediaEl.volume = +e.target.value;
+    muteBtn.textContent = mediaEl && mediaEl.muted ? 'Unmute' : 'Mute';
+  });
+
+  // mute toggle
+  muteBtn.addEventListener('click', ()=>{
+    if(!mediaEl) return;
+    mediaEl.muted = !mediaEl.muted;
+    muteBtn.textContent = mediaEl.muted ? 'Unmute' : 'Mute';
+  });
+
+  // play/pause
+  playBtn.addEventListener('click', async ()=>{
+    if(!mediaEl) return;
+    if(mediaEl.paused){
+      try{ await mediaEl.play(); playBtn.textContent='Pause'; }
+      catch(e){ console.warn('play failed', e); }
+    } else {
+      mediaEl.pause(); playBtn.textContent='Play';
     }
-    if (g.mp4) {
-      const mp4url = `https://raw.githubusercontent.com/sudoduck/y3b/main/${g.mp4.path}`;
-      html += `<video controls><source src="${mp4url}" type="video/mp4"></video>`;
-    }
+  });
 
-    card.innerHTML = html;
-    container.appendChild(card);
+  // update UI on timeupdate
+  if(mediaEl){
+    mediaEl.addEventListener('timeupdate', ()=>{
+      const pct = (mediaEl.currentTime / Math.max(1, mediaEl.duration)) * 100;
+      bar.style.width = pct + '%';
+      timeLabel.textContent = `${fmt(mediaEl.currentTime)} / ${fmt(mediaEl.duration)}`;
+    });
+    mediaEl.addEventListener('play', ()=> playBtn.textContent='Pause');
+    mediaEl.addEventListener('pause', ()=> playBtn.textContent='Play');
+    mediaEl.addEventListener('ended', ()=> playBtn.textContent='Play');
+    // apply initial volume
+    mediaEl.volume = parseFloat(volRange.value);
+  }
+
+  // seek by clicking progress bar
+  prog.addEventListener('click', (e)=>{
+    if(!mediaEl) return;
+    const rect = prog.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const pct = x / rect.width;
+    mediaEl.currentTime = pct * (mediaEl.duration || 0);
+    bar.style.width = (pct*100)+'%';
+  });
+
+  // waveform: if MP3 exists, decode and draw static waveform (blue)
+  if(mp3url && canvas){
+    drawWaveFromUrl(mp3url, canvas).catch(err=>{ console.warn('wave draw failed', err); canvas.parentElement.style.display='none' });
+    // allow seeking by clicking waveform
+    canvas.addEventListener('click', (e)=>{
+      if(!mediaEl) return;
+      const rect = canvas.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      mediaEl.currentTime = pct * (mediaEl.duration || 0);
+    });
+  } else if(canvas){
+    canvas.parentElement.style.display='none';
+  }
+
+  // download link: ensure points to correct file (mp3 preferred)
+  download.href = mp3url || mp4url;
+
+  return container;
+}
+
+/* draw static waveform from an audio file URL (mp3)
+   - decodes audio via AudioContext.decodeAudioData (fetch+arrayBuffer)
+   - computes peaks and draws bars
+*/
+async function drawWaveFromUrl(url, canvas){
+  if(!window.OfflineAudioContext && !window.AudioContext) throw new Error('Web Audio not supported');
+  const resp = await fetch(url);
+  const ab = await resp.arrayBuffer();
+  const ctx = new (window.OfflineAudioContext || window.AudioContext)(1,44100,44100);
+  // decode
+  const audioBuffer = await ctx.decodeAudioData(ab.slice(0));
+  const raw = audioBuffer.getChannelData(0);
+  const samples = 200; // number of bars to draw
+  const block = Math.floor(raw.length / samples);
+  const peaks = new Float32Array(samples);
+  for(let i=0;i<samples;i++){
+    let start = i*block, sum = 0, max=0;
+    for(let j=0;j<block;j++){
+      const v = Math.abs(raw[start+j]);
+      if(v>max) max=v;
+    }
+    peaks[i] = max;
+  }
+
+  // draw onto canvas (device pixel ratio aware)
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  const g = canvas.getContext('2d');
+  g.scale(dpr,dpr);
+  g.clearRect(0,0,width,height);
+
+  // background subtle
+  g.fillStyle = 'rgba(255,255,255,0.02)';
+  g.fillRect(0,0,width,height);
+
+  // draw bars (blue)
+  const padding = 6;
+  const availW = width - padding*2;
+  const barW = Math.max(1, (availW / samples) * 0.75);
+  const gap = (availW - barW*samples) / (samples-1 < 1 ? 1 : samples-1);
+  const center = height/2;
+  for(let i=0;i<samples;i++){
+    const v = peaks[i];
+    const h = Math.max(1, v * (height - 16));
+    const x = padding + i*(barW + gap);
+    const yTop = center - h/2;
+    const yBottom = center + h/2;
+
+    // gradient fill for bars (deep blue -> light)
+    const grad = g.createLinearGradient(0,yTop,0,yBottom);
+    grad.addColorStop(0, '#bfe6ff');
+    grad.addColorStop(0.45, '#66bfff');
+    grad.addColorStop(1, '#2b8fe0');
+    g.fillStyle = grad;
+    // rounded rect bar
+    roundRect(g, x, yTop, barW, h, barW*0.4);
+    g.fill();
+  }
+}
+
+// draw rounded rect helper
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* --------------------------
+   Render whole library into grid
+----------------------------*/
+async function renderLibrary(){
+  const container = document.getElementById('container');
+  container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">Scanning repo for media...</div>';
+  try{
+    const files = await getAllFiles('');
+    if(!files.length){ container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">No MP3/MP4 files found in repo.</div>'; return; }
+    const groups = groupFiles(files);
+    container.innerHTML = '';
+    // Ordered keys: newest first heuristically by file.path (not strictly necessary)
+    const keys = Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+    for(const k of keys){
+      const card = createCard(k, groups[k]);
+      container.appendChild(card);
+    }
+    applySearch(); // wire search initial
+  }catch(e){
+    console.error(e);
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">Failed to load library (see console)</div>';
+  }
+}
+
+/* -------------------------
+   Live search binding
+--------------------------*/
+document.getElementById('search').addEventListener('input', applySearch);
+function applySearch(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  document.querySelectorAll('.card').forEach(c=>{
+    c.style.display = c.dataset.name.includes(q) ? '' : 'none';
   });
 }
 
-/* ---------------------- SEARCH ---------------------- */
-document.getElementById("search").addEventListener("input", e => {
-  const term = e.target.value.toLowerCase();
-  document.querySelectorAll(".card").forEach(card => {
-    card.style.display = card.dataset.name.includes(term) ? "block" : "none";
-  });
-});
-
-/* ---------------------- INIT ---------------------- */
-showFiles();
+/* initialize */
+renderLibrary();
 </script>
 
 
