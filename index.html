@@ -2,4 +2,221 @@
 <html lang="en" class=""><head><script>window.livecodes = window.livecodes || {};</script><title>Untitled Project</title><meta name="title" content="Untitled Project"><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="./style.css"><script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" async=""></script><script type="importmap">{
   "imports": {}
-}</script></head><body>aws-3843cnfi<script src="./script.js"></script></body></html>
+}</script></head><body>
+
+
+  <meta charset="UTF-8">
+  <title>Sudoduck — Cloud Player</title>
+
+  <style>
+    /* ---------------------- RESET & BASE ---------------------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #050007;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ---------------------- BACKGROUND ORBS ---------------------- */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.45;
+      pointer-events: none;
+      animation: floaty 18s infinite alternate ease-in-out;
+    }
+    @keyframes floaty {
+      0% { transform: translate(-10%, -10%) scale(1); }
+      100% { transform: translate(10%, 10%) scale(1.2); }
+    }
+    #orb1 { width: 600px; height: 600px; background: #8000ff; top: -200px; left: -200px; }
+    #orb2 { width: 700px; height: 700px; background: #ff00ff; bottom: -250px; right: -200px; animation-delay: 6s; }
+    #orb3 { width: 500px; height: 500px; background: #3300ff; top: 40%; left: 20%; animation-delay: 3s; }
+
+    /* ---------------------- HEADER ---------------------- */
+    header {
+      text-align: center;
+      padding: 70px 20px 30px;
+    }
+    header h1 {
+      font-size: 65px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, #c38bff, #ffffff, #a359ff);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 50px #b100ff77;
+    }
+    header p {
+      margin-top: 18px;
+      font-size: 20px;
+      opacity: 0.8;
+    }
+
+    /* ---------------------- SEARCH ---------------------- */
+    #search {
+      display: block;
+      margin: 40px auto 10px;
+      width: 90%;
+      max-width: 600px;
+      padding: 18px 25px;
+      font-size: 18px;
+      border-radius: 50px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      box-shadow: 0 0 25px #8a3dff88;
+      backdrop-filter: blur(12px);
+      transition: 0.25s;
+    }
+    #search:focus {
+      box-shadow: 0 0 40px #c180ffcc;
+      background: rgba(255,255,255,0.18);
+    }
+
+    /* ---------------------- GRID ---------------------- */
+    .grid {
+      width: 92%;
+      margin: 40px auto 80px;
+      display: grid;
+      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    }
+
+    /* ---------------------- CARDS ---------------------- */
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 22px;
+      padding: 25px;
+      backdrop-filter: blur(22px);
+      box-shadow:
+        0 0 25px #9d4dff33,
+        inset 0 0 20px #ffffff08;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: 0.35s;
+      transform: translateY(0);
+    }
+    .card:hover {
+      transform: translateY(-12px) scale(1.02);
+      box-shadow:
+        0 0 45px #c290ff66,
+        inset 0 0 40px #ffffff11;
+    }
+
+    /* ---------------------- TITLE ---------------------- */
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 10px #d9a6ff;
+    }
+
+    audio, video {
+      width: 100%;
+      margin-top: 14px;
+      border-radius: 14px;
+      background: black;
+      outline: none;
+      box-shadow: 0 0 20px #00000088;
+    }
+  </style>
+
+
+
+<!-- Cinematic Background Orbs -->
+<div id="orb1" class="orb"></div>
+<div id="orb2" class="orb"></div>
+<div id="orb3" class="orb"></div>
+
+<header>
+  <h1>Sudoduck Cloud Player</h1>
+  <p>Ultra-premium MP3/MP4 playback directly from your GitHub</p>
+</header>
+
+<input type="text" id="search" placeholder="Search tracks…">
+
+<div class="grid" id="container">Loading...</div>
+
+<script>
+/* ---------------------- FETCH FILES ---------------------- */
+async function getAllFiles(path = "") {
+  const url = `https://api.github.com/repos/sudoduck/y3b/contents/${path}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  let files = [];
+
+  for (const item of data) {
+    if (item.type === "file" && (item.name.endsWith(".mp3") || item.name.endsWith(".mp4")))
+      files.push(item);
+    if (item.type === "dir")
+      files.push(...await getAllFiles(item.path));
+  }
+  return files;
+}
+
+/* ---------------------- GROUP FILES ---------------------- */
+function groupFiles(files) {
+  const groups = {};
+  files.forEach(f => {
+    const base = f.name.replace(/\.(mp3|mp4)$/i, "");
+    if (!groups[base]) groups[base] = {};
+    if (f.name.endsWith(".mp3")) groups[base].mp3 = f;
+    if (f.name.endsWith(".mp4")) groups[base].mp4 = f;
+  });
+  return groups;
+}
+
+/* ---------------------- DISPLAY ---------------------- */
+async function showFiles() {
+  const container = document.getElementById("container");
+  container.innerHTML = "";
+
+  const files = await getAllFiles("");
+  const groups = groupFiles(files);
+
+  Object.keys(groups).forEach(name => {
+    const g = groups[name];
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.name = name.toLowerCase();
+
+    let html = `<div class="title">${name}</div>`;
+
+    if (g.mp3) {
+      const mp3url = `https://raw.githubusercontent.com/sudoduck/y3b/main/${g.mp3.path}`;
+      html += `<audio controls><source src="${mp3url}" type="audio/mpeg"></audio>`;
+    }
+    if (g.mp4) {
+      const mp4url = `https://raw.githubusercontent.com/sudoduck/y3b/main/${g.mp4.path}`;
+      html += `<video controls><source src="${mp4url}" type="video/mp4"></video>`;
+    }
+
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+/* ---------------------- SEARCH ---------------------- */
+document.getElementById("search").addEventListener("input", e => {
+  const term = e.target.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(card => {
+    card.style.display = card.dataset.name.includes(term) ? "block" : "none";
+  });
+});
+
+/* ---------------------- INIT ---------------------- */
+showFiles();
+</script>
+
+
+
+<script src="./script.js"></script></body></html>
