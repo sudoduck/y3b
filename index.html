@@ -7,438 +7,417 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sudoduck — Cloud Player (Pro Controls)</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet">
-
+<title>LEAKSOUND — Underground Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&amp;family=Oswald:wght@300;500;700&amp;display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#050007; --glass: rgba(255,255,255,0.06);
-    --accent:#4da3ff; /* blue accent (user asked blue) */
-    --accent-weak: rgba(77,163,255,0.14);
-    --card-glow: rgba(77,163,255,0.12);
+    --bg:#050407; --panel:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    --neon:#8ae6ff; --accent:#ff6b9a; --muted:rgba(255,255,255,0.12);
   }
   *{box-sizing:border-box}
   body{
-    margin:0; min-height:100vh; font-family:'Inter',system-ui,Arial;
-    background: radial-gradient(1200px 600px at 10% 10%, #07102a 0%, var(--bg) 40%, #020007 100%);
-    color:#e9f2ff; -webkit-font-smoothing:antialiased;
+    margin:0; font-family:Inter,system-ui,Arial; background:
+      radial-gradient(1200px 600px at 10% 20%, rgba(140,40,120,0.06), transparent 6%),
+      radial-gradient(1000px 400px at 90% 80%, rgba(30,120,200,0.03), transparent 6%),
+      var(--bg); color:#e9f7fb; -webkit-font-smoothing:antialiased;
+    min-height:100vh; position:relative; padding-bottom:96px; /* space for player */
   }
 
-  /* Cinematic orbs */
-  .orb{position:fixed;border-radius:50%;filter:blur(140px);opacity:0.45;pointer-events:none}
-  #orbA{width:700px;height:700px;background:linear-gradient(135deg,#21004a,#3b00a8);left:-200px;top:-220px}
-  #orbB{width:700px;height:700px;background:linear-gradient(135deg,#002a4d,#004e8a);right:-250px;bottom:-200px;opacity:0.28}
-
-  header{padding:64px 20px 12px;text-align:center}
-  header h1{
-    margin:0;font-size:56px;line-height:1;font-weight:800;
-    background:linear-gradient(90deg,#b7d8ff,#ffffff,#7bb7ff);-webkit-background-clip:text;color:transparent;
-    text-shadow:0 6px 40px rgba(77,163,255,0.06);
-  }
-  header p{margin-top:10px;opacity:0.85}
-
-  /* search */
-  #searchWrap{display:flex;justify-content:center;margin:28px 20px}
-  #search{
-    width:100%;max-width:760px;padding:14px 18px;border-radius:999px;border:1px solid rgba(255,255,255,0.06);
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    color:#dff1ff; outline:none;box-shadow:0 6px 28px var(--card-glow);font-size:16px;
+  /* Film grain overlay */
+  body::after{
+    content:""; pointer-events:none; position:fixed; inset:0; z-index:1000;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="n"><feTurbulence baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.02"/></svg>');
+    mix-blend-mode:overlay; opacity:0.9;
   }
 
-  .grid{
-    width:94%;max-width:1200px;margin:36px auto 100px;display:grid;gap:30px;
-    grid-template-columns: repeat(auto-fit,minmax(340px,1fr));
+  header{
+    display:flex; align-items:center; gap:18px; padding:18px 28px; position:sticky; top:0; z-index:40;
+    background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.15)); border-bottom:1px solid rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+  }
+  .logo{
+    display:flex; gap:12px; align-items:center;
+  }
+  .badge{
+    width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(180deg,#071017,#0b0b10);
+    box-shadow: 0 10px 40px rgba(24,48,96,0.35), inset 0 -12px 30px rgba(0,0,0,0.6);
+    font-weight:900; font-family:Oswald, sans-serif; font-size:20px; color:var(--neon);
+    letter-spacing:1px;
+  }
+  .brandText{line-height:1}
+  .brandText .title{font-weight:900; font-family:Oswald, sans-serif; letter-spacing:1px;}
+  .brandText .sub{font-size:12px; opacity:0.8; margin-top:2px; color:var(--muted)}
+
+  .search{
+    margin-left:24px; flex:1; max-width:700px; position:relative;
+  }
+  .search input{
+    width:100%; padding:12px 16px; border-radius:999px; border:1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.02); color:inherit; outline:none; font-size:14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
   }
 
-  /* Album card */
-  .card{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:18px;padding:18px;border:1px solid rgba(255,255,255,0.04);
-    box-shadow: 0 10px 40px rgba(4,8,24,0.6), 0 0 30px var(--card-glow);
-    transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s;
-    position:relative; overflow:hidden;
-  }
-  .card:hover{ transform: translateY(-10px); box-shadow: 0 30px 80px rgba(4,8,24,0.7), 0 0 50px rgba(77,163,255,0.18); }
-
-  .meta{display:flex;gap:12px;align-items:center}
-  .art{
-    width:88px;height:88px;border-radius:12px;background:linear-gradient(180deg,#111,#060020);
-    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);
-    box-shadow: inset 0 -6px 20px rgba(0,0,0,0.6);
-    flex:0 0 88px;font-size:20px;
-  }
-  .info{flex:1}
-  .title{font-size:18px;font-weight:700;margin-bottom:6px}
-  .sub{opacity:0.72;font-size:13px}
-
-  /* controls container */
-  .controls{margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-  .leftControls{display:flex;flex-direction:column;gap:10px}
-
-  /* waveform canvas */
-  .waveWrap{height:64px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:10px;padding:6px;border:1px solid rgba(255,255,255,0.02)}
-  canvas.wave{width:100%;height:52px;display:block;border-radius:8px; background:linear-gradient(90deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));}
-
-  /* timeline / progress */
-  .progress{
-    height:8px;border-radius:8px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;cursor:pointer;
-  }
-  .progress .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#9ad6ff);box-shadow:0 6px 20px rgba(77,163,255,0.12);transition:width .08s linear}
-
-  /* small controls row */
-  .buttons{display:flex;gap:10px;align-items:center}
+  .controls{display:flex; gap:10px; align-items:center; margin-left:auto}
   .btn{
-    display:inline-flex;align-items:center;justify-content:center;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.02);
-    color:var(--accent);cursor:pointer;font-weight:600;gap:8px;min-width:44px;
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
-  }
-  .btn.play{background:linear-gradient(90deg,var(--accent),#6fb9ff);color:#04102a}
-  .time{font-size:13px;opacity:0.88;min-width:72px;text-align:right}
-
-  /* right column: big controls */
-  .rightCol{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
-  .download{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);color:var(--accent);text-decoration:none;font-weight:700}
-  .volumeRow{display:flex;align-items:center;gap:8px}
-  input[type="range"]{appearance:none;width:120px;height:6px;background:transparent}
-  input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:linear-gradient(90deg,#2b3b4d,#274a6a)}
-  input[type="range"]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 6px 18px rgba(77,163,255,0.18);margin-top:-4px}
-  .mutebtn{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);color:#9fcfff}
-
-  /* video element style */
-  video.element{
-    width:100%;border-radius:12px;background:#000;display:block;margin-top:12px;
+    padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:var(--neon); font-weight:700; cursor:pointer;
   }
 
-  @media (max-width:720px){
-    header h1{font-size:34px}
-    .meta{gap:10px}
-    .art{width:72px;height:72px}
-    .title{font-size:16px}
+  /* Layout */
+  .wrap{max-width:1200px; margin:28px auto; padding:0 20px; display:grid; grid-template-columns: 1fr 360px; gap:24px; align-items:start;}
+  .hero{
+    background:var(--panel); padding:22px; border-radius:14px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 30px 60px rgba(2,6,12,0.6);
+    display:flex; gap:18px; align-items:center;
   }
+  .heroArt{
+    width:220px; height:220px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(180deg,#02030a,#0c0012); font-size:72px; font-weight:900; color:var(--accent);
+    box-shadow: 0 20px 50px rgba(8,10,20,0.7);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  .heroMeta{flex:1}
+  .kicker{font-size:12px; color:var(--neon); font-weight:800; letter-spacing:1px}
+  .title{font-size:28px; font-weight:900; margin:8px 0 6px}
+  .desc{opacity:0.85; margin-bottom:14px}
+  .heroActions{display:flex; gap:12px; align-items:center}
+  .btnPlay{background: linear-gradient(90deg, #3be6ff, #6b7dff); color:#041226; padding:12px 18px; border-radius:12px; font-weight:900; border:none; cursor:pointer; box-shadow:0 14px 40px rgba(75,120,255,0.12)}
+  .btnGhost{padding:10px 14px; border-radius:10px; background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--neon)}
+
+  /* Library */
+  .panel{background:var(--panel); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.03)}
+  .panelTitle{font-weight:800; font-size:14px; margin-bottom:12px}
+  .grid{display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:18px}
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.008));
+    padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); cursor:pointer;
+    display:flex; gap:12px; align-items:center; transition:transform .15s ease, box-shadow .15s;
+  }
+  .card:hover{transform:translateY(-6px); box-shadow:0 30px 60px rgba(10,20,40,0.5)}
+  .thumb{width:56px; height:56px; border-radius:8px; background:linear-gradient(180deg,#061018,#0b0210); display:flex;align-items:center;justify-content:center; font-weight:900; color:var(--neon)}
+  .metaCol{flex:1}
+  .name{font-weight:800}
+  .sub{font-size:13px; opacity:0.85; margin-top:4px; display:flex; gap:12px; align-items:center}
+  .tiny{font-size:12px; opacity:0.7}
+
+  /* mini player at bottom */
+  .miniPlayer{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:12px; z-index:60;
+    width:92%; max-width:1100px; background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+    border-radius:14px; padding:12px 16px; display:flex; gap:12px; align-items:center; border:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  }
+  .mpInfo{display:flex; gap:12px; align-items:center; min-width:0; flex:1}
+  .mpTitle{font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46vw}
+  .mpControls{display:flex; gap:8px; align-items:center}
+  .iconBtn{background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px 10px; border-radius:10px; cursor:pointer; color:var(--neon)}
+  .progress{width:100%; height:6px; background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden}
+  .progress > div{height:100%; width:0%; background:linear-gradient(90deg,var(--neon),var(--accent)); border-radius:999px; transition:width .12s linear}
+
+  /* utility */
+  .muted{opacity:0.75}
+  @media (max-width:980px){ .wrap{grid-template-columns:1fr} .mpTitle{max-width:36vw} .heroArt{display:none} }
 </style>
 
 
 
-<div id="orbA" class="orb"></div>
-<div id="orbB" class="orb"></div>
-
 <header>
-  <h1>Sudoduck — Cloud Player (Pro)</h1>
-  <p>Custom players, clickable waveform (blue), download &amp; professional controls — auto-detected from your repo.</p>
+  <div class="logo">
+    <div class="badge">LS</div>
+    <div class="brandText">
+      <div class="title">LEAKSOUND</div>
+      <div class="sub">underground player</div>
+    </div>
+  </div>
+
+  <div class="search">
+    <input id="globalSearch" placeholder="Search leaks, tracks, filenames...">
+  </div>
+
+  <div class="controls">
+    <button id="refreshBtn" class="btn">Refresh</button>
+    <button id="toggleDemo" class="btn">Toggle Featured</button>
+  </div>
 </header>
 
-<div id="searchWrap">
-  <input id="search" placeholder="Search tracks, artist, filename...">
-</div>
+<main class="wrap">
+  <section class="hero">
+    <div class="heroArt" id="heroArt">LS</div>
+    <div class="heroMeta">
+      <div class="kicker">Fresh Leak</div>
+      <div class="title" id="heroTitle">Scanning repository...</div>
+      <div class="desc" id="heroDesc">Pulling mp3 / mp4 files from GitHub. This site streams raw files directly — for demo only.</div>
 
-<main class="grid" id="container">
-  <div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">Loading library...</div>
+      <div class="heroActions">
+        <button id="heroPlay" class="btnPlay">Play</button>
+        <a id="heroDownload" class="btnGhost" href="#" target="_blank" rel="noreferrer">Download</a>
+      </div>
+
+      <div style="margin-top:14px" id="heroPlayerWrap"></div>
+    </div>
+  </section>
+
+  <aside>
+    <div class="panel">
+      <div class="panelTitle">Library</div>
+      <div id="libraryList" style="max-height:640px; overflow:auto; padding-right:6px"></div>
+    </div>
+  </aside>
+
+  <section style="grid-column:1/-1; margin-top:18px">
+    <div class="panel">
+      <div class="panelTitle">All Tracks</div>
+      <div id="grid" class="grid">Loading library...</div>
+    </div>
+  </section>
 </main>
 
-<script>
-/* ------------------------------
-  CONFIG: repo owner/name and branch
-   - If your default branch is not main, change 'main' below.
--------------------------------*/
-const GITHUB_USER = 'sudoduck';
-const GITHUB_REPO = 'y3b';
-const BRANCH = 'main'; // change if needed
+<!-- Mini player -->
+<div class="miniPlayer" id="miniPlayer" style="display:none">
+  <div class="mpInfo">
+    <div class="thumb" id="miniThumb">LS</div>
+    <div style="min-width:0">
+      <div class="mpTitle" id="miniTitle">—</div>
+      <div class="tiny muted" id="miniSub">—</div>
+      <div style="margin-top:8px" class="progress"><div id="progBar"></div></div>
+    </div>
+  </div>
 
-/* helper: fetch folder contents recursively from GitHub contents API */
+  <div class="mpControls">
+    <button id="prevBtn" class="iconBtn">⏮</button>
+    <button id="playBtn" class="iconBtn">▶</button>
+    <button id="nextBtn" class="iconBtn">⏭</button>
+    <a id="miniDownload" class="iconBtn" href="#" download="">⬇</a>
+  </div>
+</div>
+
+<script>
+/* ==== CONFIG (change these) ==== */
+const GITHUB_USER='sudoduck'; // <-- change
+const GITHUB_REPO='y3b';      // <-- change
+const BRANCH='main';          // <-- change
+/* ============================== */
+
+const searchInput = document.getElementById('globalSearch');
+const refreshBtn = document.getElementById('refreshBtn');
+const heroTitle = document.getElementById('heroTitle');
+const heroDesc  = document.getElementById('heroDesc');
+const heroPlay  = document.getElementById('heroPlay');
+const heroDownload = document.getElementById('heroDownload');
+const heroPlayerWrap = document.getElementById('heroPlayerWrap');
+const grid = document.getElementById('grid');
+const libraryList = document.getElementById('libraryList');
+
+const miniPlayer = document.getElementById('miniPlayer');
+const miniTitle = document.getElementById('miniTitle');
+const miniSub = document.getElementById('miniSub');
+const progBar = document.getElementById('progBar');
+const playBtn = document.getElementById('playBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const miniDownload = document.getElementById('miniDownload');
+const miniThumb = document.getElementById('miniThumb');
+
+let library = {};            // grouped tracks
+let order = [];              // order of keys
+let currentIdx = -1;
+let currentAudioEl = null;
+
+/* safe id generator from filename */
+function safeId(name){ return name.replace(/[^a-z0-9\-_]/ig,'_'); }
+
+/* fetch files recursively via GitHub contents API */
 async function getAllFiles(path=''){
   const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
-  const res = await fetch(url);
-  if(!res.ok) return [];
-  const data = await res.json();
-  let files = [];
-  for(const item of data){
-    if(item.type === 'file' && (item.name.toLowerCase().endsWith('.mp3') || item.name.toLowerCase().endsWith('.mp4'))){
-      files.push(item);
-    } else if(item.type === 'dir'){
-      const sub = await getAllFiles(item.path);
-      files = files.concat(sub);
+  try{
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    let out = [];
+    for(const it of data){
+      if(it.type === 'file'){
+        const n = it.name.toLowerCase();
+        if(n.endsWith('.mp3') || n.endsWith('.mp4')) out.push(it);
+      } else if(it.type === 'dir'){
+        const sub = await getAllFiles(it.path);
+        out = out.concat(sub);
+      }
     }
+    return out;
+  }catch(e){
+    console.error('GitHub fetch error', e);
+    return [];
   }
-  return files;
 }
 
-/* group by base name (filename without extension) */
+function rawUrl(file){ return `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${file.path}`; }
+
 function groupFiles(files){
   const groups = {};
-  files.forEach(f=>{
+  for(const f of files){
     const base = f.name.replace(/\.(mp3|mp4)$/i,'');
-    if(!groups[base]) groups[base] = {};
+    if(!groups[base]) groups[base] = { name: base, paths: [], mp3:null, mp4:null };
+    groups[base].paths.push(f.path);
     if(f.name.toLowerCase().endsWith('.mp3')) groups[base].mp3 = f;
     if(f.name.toLowerCase().endsWith('.mp4')) groups[base].mp4 = f;
-  });
+  }
   return groups;
 }
 
-/* create card HTML and wire custom controls */
-function createCard(name, group){
-  const container = document.createElement('div');
-  container.className = 'card';
-  container.dataset.name = name.toLowerCase();
-
-  // art initial letters or emoji
-  const artLabel = name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
-
-  // raw URLs
-  const mp3url = group.mp3 ? `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${group.mp3.path}` : null;
-  const mp4url = group.mp4 ? `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/${group.mp4.path}` : null;
-
-  // build base HTML
-  container.innerHTML = `
-    <div class="meta">
-      <div class="art">${artLabel}</div>
-      <div class="info">
-        <div class="title">${name}</div>
-        <div class="sub">${group.mp3 ? group.mp3.path : ''}${group.mp3 && group.mp4 ? ' • ' : ''}${group.mp4 ? group.mp4.path : ''}</div>
-      </div>
-    </div>
-
-    <div class="controls">
-      <div class="leftControls">
-        <div class="waveWrap" ${mp3url ? '' : 'style="display:none"'}><canvas class="wave"></canvas></div>
-
-        <div class="progress" title="Seek">
-          <div class="bar"></div>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-          <div class="buttons">
-            <button class="btn play">Play</button>
-            <button class="btn prev" style="display:none">Prev</button>
-            <button class="btn next" style="display:none">Next</button>
-            <button class="btn mutebtn">Mute</button>
-          </div>
-          <div class="time">0:00 / 0:00</div>
-        </div>
-      </div>
-
-      <div class="rightCol">
-        <a class="download" download="${name}" href="${mp3url||mp4url}">Download</a>
-        <div class="volumeRow">
-          <input type="range" min="0" max="1" step="0.01" value="0.85" class="vol"/>
-        </div>
-      </div>
-    </div>
-
-    <div class="mediaHolder" style="margin-top:12px">
-      ${mp4url ? `<video class="element" preload="metadata" src="${mp4url}"></video>` : ''}
-      ${mp3url ? `<audio class="element" preload="metadata" src="${mp3url}" style="display:none"></audio>` : ''}
-    </div>
-  `;
-
-  // Now wire up custom controls & waveform
-  const playBtn = container.querySelector('.play');
-  const muteBtn = container.querySelector('.mutebtn');
-  const volRange = container.querySelector('.vol');
-  const prog = container.querySelector('.progress');
-  const bar = container.querySelector('.bar');
-  const timeLabel = container.querySelector('.time');
-  const canvas = container.querySelector('canvas.wave');
-  const download = container.querySelector('.download');
-  const media = container.querySelector('.element'); // either audio (hidden) or video
-  const audioElement = media; // name consistently
-
-  // fallback: if audio element is missing but mp3 exists, create audio
-  if(!audioElement && mp3url){
-    const a = document.createElement('audio'); a.className='element'; a.src = mp3url; a.preload='metadata'; a.style.display='none';
-    container.querySelector('.mediaHolder').appendChild(a);
-  }
-
-  const mediaEl = container.querySelector('.element');
-
-  // helper: format time
-  function fmt(s){
-    if(!isFinite(s)) return '0:00';
-    const m = Math.floor(s/60), sec = Math.floor(s%60).toString().padStart(2,'0');
-    return `${m}:${sec}`;
-  }
-
-  // wire volume
-  volRange.addEventListener('input', e=>{
-    if(mediaEl) mediaEl.volume = +e.target.value;
-    muteBtn.textContent = mediaEl && mediaEl.muted ? 'Unmute' : 'Mute';
-  });
-
-  // mute toggle
-  muteBtn.addEventListener('click', ()=>{
-    if(!mediaEl) return;
-    mediaEl.muted = !mediaEl.muted;
-    muteBtn.textContent = mediaEl.muted ? 'Unmute' : 'Mute';
-  });
-
-  // play/pause
-  playBtn.addEventListener('click', async ()=>{
-    if(!mediaEl) return;
-    if(mediaEl.paused){
-      try{ await mediaEl.play(); playBtn.textContent='Pause'; }
-      catch(e){ console.warn('play failed', e); }
-    } else {
-      mediaEl.pause(); playBtn.textContent='Play';
-    }
-  });
-
-  // update UI on timeupdate
-  if(mediaEl){
-    mediaEl.addEventListener('timeupdate', ()=>{
-      const pct = (mediaEl.currentTime / Math.max(1, mediaEl.duration)) * 100;
-      bar.style.width = pct + '%';
-      timeLabel.textContent = `${fmt(mediaEl.currentTime)} / ${fmt(mediaEl.duration)}`;
-    });
-    mediaEl.addEventListener('play', ()=> playBtn.textContent='Pause');
-    mediaEl.addEventListener('pause', ()=> playBtn.textContent='Play');
-    mediaEl.addEventListener('ended', ()=> playBtn.textContent='Play');
-    // apply initial volume
-    mediaEl.volume = parseFloat(volRange.value);
-  }
-
-  // seek by clicking progress bar
-  prog.addEventListener('click', (e)=>{
-    if(!mediaEl) return;
-    const rect = prog.getBoundingClientRect();
-    const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-    const pct = x / rect.width;
-    mediaEl.currentTime = pct * (mediaEl.duration || 0);
-    bar.style.width = (pct*100)+'%';
-  });
-
-  // waveform: if MP3 exists, decode and draw static waveform (blue)
-  if(mp3url && canvas){
-    drawWaveFromUrl(mp3url, canvas).catch(err=>{ console.warn('wave draw failed', err); canvas.parentElement.style.display='none' });
-    // allow seeking by clicking waveform
-    canvas.addEventListener('click', (e)=>{
-      if(!mediaEl) return;
-      const rect = canvas.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      mediaEl.currentTime = pct * (mediaEl.duration || 0);
-    });
-  } else if(canvas){
-    canvas.parentElement.style.display='none';
-  }
-
-  // download link: ensure points to correct file (mp3 preferred)
-  download.href = mp3url || mp4url;
-
-  return container;
+function addCard(name, item, container){
+  const card = document.createElement('div'); card.className='card';
+  const thumb = document.createElement('div'); thumb.className='thumb'; thumb.innerText = name[0].toUpperCase();
+  const meta = document.createElement('div'); meta.className='metaCol';
+  const title = document.createElement('div'); title.className='name'; title.innerText = name;
+  const sub = document.createElement('div'); sub.className='sub';
+  const tiny = document.createElement('div'); tiny.className='tiny'; tiny.innerText = item.mp3 ? 'audio' : 'video';
+  const play = document.createElement('button'); play.className='btnGhost'; play.innerText='Play';
+  const dl = document.createElement('a'); dl.className='btnGhost'; dl.innerText='Download'; dl.href = item.mp3 ? rawUrl(item.mp3) : rawUrl(item.mp4); dl.target='_blank';
+  play.onclick = () => { playTrackByName(name); };
+  sub.appendChild(play); sub.appendChild(dl);
+  meta.appendChild(title); meta.appendChild(sub);
+  card.appendChild(thumb); card.appendChild(meta);
+  card.onclick = (e)=>{ if(e.target===card) playTrackByName(name) }; // click whole card
+  container.appendChild(card);
 }
 
-/* draw static waveform from an audio file URL (mp3)
-   - decodes audio via AudioContext.decodeAudioData (fetch+arrayBuffer)
-   - computes peaks and draws bars
-*/
-async function drawWaveFromUrl(url, canvas){
-  if(!window.OfflineAudioContext && !window.AudioContext) throw new Error('Web Audio not supported');
-  const resp = await fetch(url);
-  const ab = await resp.arrayBuffer();
-  const ctx = new (window.OfflineAudioContext || window.AudioContext)(1,44100,44100);
-  // decode
-  const audioBuffer = await ctx.decodeAudioData(ab.slice(0));
-  const raw = audioBuffer.getChannelData(0);
-  const samples = 200; // number of bars to draw
-  const block = Math.floor(raw.length / samples);
-  const peaks = new Float32Array(samples);
-  for(let i=0;i<samples;i++){
-    let start = i*block, sum = 0, max=0;
-    for(let j=0;j<block;j++){
-      const v = Math.abs(raw[start+j]);
-      if(v>max) max=v;
-    }
-    peaks[i] = max;
-  }
-
-  // draw onto canvas (device pixel ratio aware)
-  const dpr = window.devicePixelRatio || 1;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  canvas.width = Math.floor(width * dpr);
-  canvas.height = Math.floor(height * dpr);
-  const g = canvas.getContext('2d');
-  g.scale(dpr,dpr);
-  g.clearRect(0,0,width,height);
-
-  // background subtle
-  g.fillStyle = 'rgba(255,255,255,0.02)';
-  g.fillRect(0,0,width,height);
-
-  // draw bars (blue)
-  const padding = 6;
-  const availW = width - padding*2;
-  const barW = Math.max(1, (availW / samples) * 0.75);
-  const gap = (availW - barW*samples) / (samples-1 < 1 ? 1 : samples-1);
-  const center = height/2;
-  for(let i=0;i<samples;i++){
-    const v = peaks[i];
-    const h = Math.max(1, v * (height - 16));
-    const x = padding + i*(barW + gap);
-    const yTop = center - h/2;
-    const yBottom = center + h/2;
-
-    // gradient fill for bars (deep blue -> light)
-    const grad = g.createLinearGradient(0,yTop,0,yBottom);
-    grad.addColorStop(0, '#bfe6ff');
-    grad.addColorStop(0.45, '#66bfff');
-    grad.addColorStop(1, '#2b8fe0');
-    g.fillStyle = grad;
-    // rounded rect bar
-    roundRect(g, x, yTop, barW, h, barW*0.4);
-    g.fill();
-  }
-}
-
-// draw rounded rect helper
-function roundRect(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r);
-  ctx.closePath();
-}
-
-/* --------------------------
-   Render whole library into grid
-----------------------------*/
-async function renderLibrary(){
-  const container = document.getElementById('container');
-  container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">Scanning repo for media...</div>';
-  try{
-    const files = await getAllFiles('');
-    if(!files.length){ container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">No MP3/MP4 files found in repo.</div>'; return; }
-    const groups = groupFiles(files);
-    container.innerHTML = '';
-    // Ordered keys: newest first heuristically by file.path (not strictly necessary)
-    const keys = Object.keys(groups).sort((a,b)=>a.localeCompare(b));
-    for(const k of keys){
-      const card = createCard(k, groups[k]);
-      container.appendChild(card);
-    }
-    applySearch(); // wire search initial
-  }catch(e){
-    console.error(e);
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.5)">Failed to load library (see console)</div>';
-  }
-}
-
-/* -------------------------
-   Live search binding
---------------------------*/
-document.getElementById('search').addEventListener('input', applySearch);
-function applySearch(){
-  const q = document.getElementById('search').value.trim().toLowerCase();
-  document.querySelectorAll('.card').forEach(c=>{
-    c.style.display = c.dataset.name.includes(q) ? '' : 'none';
+function renderLibrary(groups){
+  library = groups;
+  order = Object.keys(groups).sort((a,b)=> a.localeCompare(b));
+  // grid
+  grid.innerHTML = '';
+  order.forEach(name => addCard(name, groups[name], grid));
+  // sidebar list (compact)
+  libraryList.innerHTML = '';
+  order.slice(0,40).forEach(name=>{
+    const el = document.createElement('div'); el.style.padding='8px 6px'; el.style.borderBottom='1px solid rgba(255,255,255,0.02)';
+    el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center';
+    el.innerHTML = `<div style="font-weight:700">${name}</div><div style="font-size:12px;opacity:.8">${groups[name].mp3? 'audio':'video'}</div>`;
+    el.onclick = ()=>playTrackByName(name);
+    libraryList.appendChild(el);
   });
 }
 
-/* initialize */
-renderLibrary();
+/* play helpers */
+function stopCurrent(){
+  if(currentAudioEl){
+    currentAudioEl.pause();
+    currentAudioEl.src=''; // release
+    currentAudioEl.remove();
+    currentAudioEl = null;
+  }
+  currentIdx = -1;
+  miniPlayer.style.display='none';
+  progBar.style.width='0%';
+}
+
+function playTrackByName(name){
+  const keys = order;
+  const idx = keys.indexOf(name);
+  if(idx === -1) return;
+  playIndex(idx);
+}
+
+function createMediaElement(src, isVideo){
+  const el = document.createElement(isVideo? 'video' : 'audio');
+  el.src = src;
+  el.controls = true;
+  el.autoplay = true;
+  el.style.width = '100%';
+  el.style.maxHeight = '320px';
+  el.onended = ()=>playNext();
+  el.ontimeupdate = ()=> {
+    if(el.duration) progBar.style.width = ((el.currentTime / el.duration) * 100) + '%';
+  };
+  return el;
+}
+
+function playIndex(idx){
+  if(!order.length) return;
+  if(idx < 0) idx = 0;
+  if(idx >= order.length) idx = order.length - 1;
+  currentIdx = idx;
+  const name = order[idx], item = library[name];
+
+  stopCurrent();
+  // hero player
+  heroPlayerWrap.innerHTML = '';
+  if(item.mp4){
+    const v = createMediaElement(rawUrl(item.mp4), true);
+    heroPlayerWrap.appendChild(v);
+    currentAudioEl = v;
+  } else if(item.mp3){
+    const a = createMediaElement(rawUrl(item.mp3), false);
+    heroPlayerWrap.appendChild(a);
+    currentAudioEl = a;
+  }
+
+  // mini player
+  miniPlayer.style.display = 'flex';
+  miniTitle.innerText = name;
+  miniSub.innerText = item.mp3 ? 'audio • ' + (item.mp3.size ? (Math.round(item.mp3.size/1024/1024*100)/100)+'MB' : '') : (item.mp4 ? 'video' : '');
+  miniDownload.href = item.mp3 ? rawUrl(item.mp3) : rawUrl(item.mp4);
+  miniDownload.download = name;
+  miniThumb.innerText = name[0].toUpperCase();
+  playBtn.innerText = '⏸';
+  // wire play/pause
+  playBtn.onclick = ()=>{
+    if(!currentAudioEl) return;
+    if(currentAudioEl.paused){ currentAudioEl.play(); playBtn.innerText = '⏸'; }
+    else { currentAudioEl.pause(); playBtn.innerText = '▶'; }
+  };
+}
+
+/* prev/next */
+function playPrev(){ if(currentIdx > 0) playIndex(currentIdx - 1); }
+function playNext(){ if(currentIdx < order.length - 1) playIndex(currentIdx + 1); }
+
+/* search */
+searchInput.addEventListener('input', (e)=>{
+  const term = e.target.value.trim().toLowerCase();
+  const filtered = order.filter(k => k.toLowerCase().includes(term));
+  grid.innerHTML = '';
+  filtered.forEach(name => addCard(name, library[name], grid));
+});
+
+/* refresh */
+refreshBtn.addEventListener('click', init);
+
+prevBtn.onclick = playPrev;
+nextBtn.onclick = playNext;
+
+/* hero 'Play' button plays first track */
+heroPlay.addEventListener('click', ()=>{
+  if(order.length) playIndex(0);
+});
+
+/* initial load */
+async function init(){
+  heroTitle.innerText = 'Scanning repository...';
+  heroDesc.innerText = `Pulling mp3 & mp4 from ${GITHUB_USER}/${GITHUB_REPO} (${BRANCH})`;
+  grid.innerHTML = 'Searching...';
+  const files = await getAllFiles('');
+  if(!files.length){
+    heroTitle.innerText = 'No leaks found';
+    heroDesc.innerText = 'No .mp3 or .mp4 files were detected in the repository.';
+    grid.innerHTML = '<div style="padding:18px; color:var(--muted)">No files found.</div>';
+    return;
+  }
+  const groups = groupFiles(files);
+  renderLibrary(groups);
+  heroTitle.innerText = Object.keys(groups)[0] || 'Library ready';
+  heroDesc.innerText = `Found ${Object.keys(groups).length} tracks. Streamed directly from GitHub raw content.`;
+  heroDownload.href = Object.values(groups)[0].mp3 ? rawUrl(Object.values(groups)[0].mp3) : (Object.values(groups)[0].mp4 ? rawUrl(Object.values(groups)[0].mp4) : '#');
+  // auto-load first item in hero player (but not autoplay in some browsers)
+  heroPlay.onclick = ()=> playIndex(0);
+}
+
+/* small nicety: click download in hero updates link when library ready */
+refreshBtn.addEventListener('click', ()=> heroDesc.innerText = 'Refreshing library...');
+
+/* start */
+init();
+
 </script>
-
 
 
 <script src="./script.js"></script></body></html>
